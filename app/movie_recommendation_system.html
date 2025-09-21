@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation System</title>
+    <style>
+        /* CSS Reset to prevent unwanted whitespace :cite[10] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .section {
+            display: none;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #home {
+            display: block;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .movie-card {
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .movie-poster-container {
+            width: 100%;
+            height: 330px;
+            overflow: hidden;
+            position: relative;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .movie-poster {
+            transform: scale(1.05);
+        }
+
+        .movie-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+
+        .movie-genres {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .movie-rating {
+            color: #f39c12;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .home-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .home-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 25px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav-btn {
+                margin: 5px 0;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .results {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 15px;
+            }
+
+            .movie-poster-container {
+                height: 240px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .results {
+                grid-template-columns: 1fr;
+            }
+
+            .movie-poster-container {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Movie Recommendation System</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="nav">
+            <button class="nav-btn" onclick="showSection('home')">Home</button>
+            <button class="nav-btn" onclick="showSection('title-picker')">Recommend by Title</button>
+            <button class="nav-btn" onclick="showSection('user-id')">Recommend for User</button>
+        </div>
+
+        <div id="home" class="section">
+            <div class="home-content">
+                <h2>Welcome to the Movie Recommendation System</h2>
+                <p>Discover your next favorite movie with our advanced recommendation algorithms.</p>
+                <p>Choose from three different recommendation methods:</p>
+                <ul>
+                    <li><strong>Recommend by Title:</strong> Get recommendations based on a movie you like</li>
+                    <li><strong>Recommend for User:</strong> Get personalized recommendations based on your user ID</li>
+                </ul>
+                <p>Click on the buttons above to get started!</p>
+                <img src="https://via.placeholder.com/600x300?text=Movie+Recommendation+System" alt="Movie Recommendation" class="home-image">
+            </div>
+        </div>
+
+        <div id="title-picker" class="section">
+            <h2>Get Recommendations Based on a Movie</h2>
+            <div class="input-group">
+                <label for="movie-title">Select a Movie:</label>
+                <select id="movie-title">
+                    <option value="">-- Select a Movie --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="model-type-title">Select Model:</label>
+                <select id="model-type-title">
+                    <option value="item_knn">Item KNN Model</option>
+                    <option value="improved_hybrid">Improved Hybrid Model</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="k-value-title">Number of Recommendations:</label>
+                <input type="number" id="k-value-title" min="1" max="20" value="5">
+            </div>
+            <button onclick="getRecommendationsByTitle()">Get Recommendations</button>
+            <div id="title-results" class="results"></div>
+        </div>
+
+        <div id="user-id" class="section">
+            <h2>Get Recommendations For a User</h2>
+            <div class="input-group">
+                <label for="user-id-input">User ID:</label>
+                <input type="number" id="user-id-input" min="1">
+            </div>
+            <div class="input-group">
+                <label for="model-type-user">Select Model:</label>
+                <select id="model-type-user">
+                    <option value="user_knn">User KNN Model</option>
+                    <option value="improved_hybrid">Improved Hybrid Model</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="k-value-user">Number of Recommendations:</label>
+                <input type="number" id="k-value-user" min="1" max="20" value="5">
+            </div>
+            <button onclick="getRecommendationsForUser()">Get Recommendations</button>
+            <div id="user-results" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show/hide sections
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show the selected section
+            document.getElementById(sectionId).style.display = 'block';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Populate movie dropdown
+        function populateMovieDropdown() {
+            const movieDropdown = document.getElementById('movie-title');
+            // Clear existing options except the first one
+            while (movieDropdown.options.length > 1) {
+                movieDropdown.remove(1);
+            }
+
+            // Show loading in dropdown
+            const loadingOption = document.createElement('option');
+            loadingOption.value = '';
+            loadingOption.textContent = 'Loading movies...';
+            loadingOption.disabled = true;
+            movieDropdown.appendChild(loadingOption);
+
+            // Fetch movie list from server
+            fetch('/get_movies')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(movies => {
+                    // Remove loading option
+                    movieDropdown.remove(movieDropdown.options.length - 1);
+
+                    // Add movies to dropdown
+                    movies.forEach(movie => {
+                        const option = document.createElement('option');
+                        option.value = movie.id;
+                        option.textContent = movie.title;
+                        movieDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching movies:', error);
+                    // Remove loading option
+                    movieDropdown.remove(movieDropdown.options.length - 1);
+
+                    // Add error option
+                    const errorOption = document.createElement('option');
+                    errorOption.value = '';
+                    errorOption.textContent = 'Error loading movies. Please refresh.';
+                    errorOption.disabled = true;
+                    movieDropdown.appendChild(errorOption);
+                });
+        }
+
+        // Get recommendations based on movie title
+        function getRecommendationsByTitle() {
+            const movieId = document.getElementById('movie-title').value;
+            const modelType = document.getElementById('model-type-title').value;
+            const kValue = document.getElementById('k-value-title').value;
+            const resultsContainer = document.getElementById('title-results');
+
+            if (!movieId) {
+                alert('Please select a movie!');
+                return;
+            }
+
+            // Show loading state
+            resultsContainer.innerHTML = '<div class="loading">Loading recommendations...</div>';
+
+            // Call the server to get recommendations
+            fetch('/recommend_by_title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    movie_id: movieId,
+                    model_type: modelType,
+                    k: kValue
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(recommendations => {
+                displayResults(resultsContainer, recommendations);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = '<div class="error">Error loading recommendations. Please try again.</div>';
+            });
+        }
+
+        // Get recommendations for a user
+        function getRecommendationsForUser() {
+            const userId = document.getElementById('user-id-input').value;
+            const modelType = document.getElementById('model-type-user').value;
+            const kValue = document.getElementById('k-value-user').value;
+            const resultsContainer = document.getElementById('user-results');
+
+            if (!userId) {
+                alert('Please enter a User ID!');
+                return;
+            }
+
+            // Show loading state
+            resultsContainer.innerHTML = '<div class="loading">Loading recommendations...</div>';
+
+            // Call the server to get recommendations
+            fetch('/recommend_for_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    model_type: modelType,
+                    k: kValue
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(recommendations => {
+                displayResults(resultsContainer, recommendations);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = '<div class="error">Error loading recommendations. Please try again.</div>';
+            });
+        }
+
+        // Display results
+        function displayResults(container, recommendations) {
+            if (!recommendations || recommendations.length === 0) {
+                container.innerHTML = '<div class="loading">No recommendations found.</div>';
+                return;
+            }
+
+            let html = '';
+            recommendations.forEach(movie => {
+                // Use placeholder if poster_url is missing or invalid
+                const posterUrl = movie.poster_url && movie.poster_url.startsWith('http') 
+                    ? movie.poster_url 
+                    : 'https://via.placeholder.com/220x330?text=No+Poster';
+
+                html += `
+                    <div class="movie-card">
+                        <div class="movie-poster-container">
+                            <img src="${posterUrl}" alt="${movie.title}" class="movie-poster" 
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/220x330?text=Poster+Not+Found'">
+                        </div>
+                        <div class="movie-info">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-genres">${movie.genres}</div>
+                            <div class="movie-rating">⭐ ${movie.vote_average}</div>
+                            <div class="explanation">${movie.explanation}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Add a small delay before showing results to prevent layout shift
+            setTimeout(() => {
+                container.style.opacity = '1';
+            }, 50);
+        }
+
+        // Initialize the page
+        window.onload = function() {
+            populateMovieDropdown();
+            showSection('home');
+        };
+    </script>
+</body>
+</html>
